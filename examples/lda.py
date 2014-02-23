@@ -109,22 +109,40 @@ class LatentDirichletAllocationGibbsSampler(object):
             if monitoring is not None:
                 monitoring(self, itr)
 
+    def get_word_topic_distribution(self):
+        """
+        phi_KxV: |K| x |V| word topic distribution
+        """
+        return (self.n_KxV + self.beta) / (self.n_K + self.beta * self.n_KxV.shape[0])[:, np.newaxis]
+
+    def get_document_topic_distribution(self):
+        """
+        theta_KxD: |K| x |D| document topic distribution
+        """
+        return (self.n_KxD + self.alpha_K[:, np.newaxis]) / (self.n_K + self.alpha_K.sum())[:, np.newaxis]
 
 def main(n_doc=100):
     datagen = LdaDataGenerator(n_topic=10, alpha=0.5)
     def lda_monitoring(lda, itr):
         if itr != 0 and (itr % 10 != 0): return
-        phi_KxV = (lda.n_KxV + lda.beta) / (lda.n_K + lda.beta * lda.n_KxV.shape[0]).reshape(-1, 1)
+        phi_KxV = lda.get_word_topic_distribution()
         gs = gridspec.GridSpec(1,2)
         visualize_squared_shape_word_dist(datagen.phi_KxV, gs[0])
         visualize_squared_shape_word_dist(phi_KxV, gs[1])
         pl.draw()
         pl.show()
-    # visualize_squared_shape_word_dist(datagen.phi_KxV)
+
+    # Generate toy dataset
     w_DxV = np.array([datagen.generate_document(n_word=100) for i in xrange(n_doc)])
-    lda = LatentDirichletAllocationGibbsSampler(n_topic=datagen.n_topic, alpha=1.0, beta=1.0)
-    pl.ion()
+    lda = LatentDirichletAllocationGibbsSampler(n_topic=datagen.n_topic, alpha=1.0, beta=1.0, n_itr=100)
+    pl.ion(); pl.figure('Word topic dist.')
     lda.fit(w_DxV, monitoring=lda_monitoring)
+
+    # Show document topic distribution
+    p_KxD = lda.get_document_topic_distribution()
+    pl.ioff(); pl.figure('Document topic dist.')
+    pl.imshow(p_KxD, interpolation='none', cmap=pl.gray()); pl.show()
+    pl.show()
 
 if __name__ == '__main__':
     main()
