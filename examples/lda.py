@@ -92,17 +92,14 @@ class LatentDirichletAllocationGibbsSampler(object):
 
         # Iteration for inference
         for itr in xrange(self.n_itr):
-            # Gibbs sampling step
             print '#itr=%d' %(itr)
+            # Gibbs sampling step
             for n, (d, w, z) in enumerate(zip(doc_N, word_N, topic_N)):
                 n_KxD[z, d] -= 1
                 n_KxV[z, w] -= 1
                 n_K[z] -= 1
                 p_K = (n_KxD[:, d] + self.alpha_K) * (n_KxV[:, w] + self.beta) / (n_K + self.beta * n_vocab)
-                try:
-                    z_new = np.random.multinomial(n=1, pvals=p_K/p_K.sum()).argmax()
-                except:
-                    pass
+                z_new = np.random.multinomial(n=1, pvals=p_K/p_K.sum()).argmax()
                 n_KxD[z_new, d] += 1
                 n_KxV[z_new, w] += 1
                 n_K[z_new] += 1
