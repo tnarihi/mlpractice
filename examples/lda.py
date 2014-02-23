@@ -141,7 +141,7 @@ def main(n_doc=100):
     # Show document topic distribution
     p_KxD = lda.get_document_topic_distribution()
     pl.ioff(); pl.figure('Document topic dist.')
-    pl.imshow(p_KxD, interpolation='none', cmap=pl.gray()); pl.show()
+    pl.imshow(p_KxD, interpolation='none', cmap=pl.gray())
     pl.show()
 
 if __name__ == '__main__':
