@@ -1,5 +1,5 @@
 # ML Practice
-Just for practice of machine learning
+Just my practices of machine learning using Python
 
 ## Contents
 - Latent Dirichlet Allocation with Gibbs sampler (examples/lda.py)
