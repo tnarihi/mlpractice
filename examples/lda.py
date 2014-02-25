@@ -5,15 +5,19 @@ from ntml.lda import LatentDirichletAllocationGibbsSampler
 
 __author__ = 'Narihira'
 
-def visualize_squared_shape_word_dist(phi_KxV, subplot_spec):
+def visualize_squared_shape_word_dist(phi_KxV):
     n_topic, n_vocab = phi_KxV.shape
     r_vocab = int(np.sqrt(n_vocab))
     cols = int(np.ceil(np.sqrt(n_topic)))
-    gs = gridspec.GridSpecFromSubplotSpec(cols, cols, subplot_spec)
-    for k in xrange(n_topic):
-        pl.subplot(gs[k])
-        pl.imshow(phi_KxV[k, :].reshape(r_vocab, r_vocab), interpolation='none', cmap=pl.gray())
-        pl.axis('off')
+    img = np.ones(((r_vocab+1) * cols - 1, (r_vocab + 1) * cols - 1)) * phi_KxV.mean()
+    for r in xrange(cols):
+        for c in xrange(cols):
+            k = r * cols + c
+            if k >= n_topic: continue
+            img[r*(r_vocab+1):(r+1)*(r_vocab+1)-1, c*(r_vocab+1):(c+1)*(r_vocab+1)-1] = \
+                phi_KxV[k, :].reshape(r_vocab, r_vocab)
+    pl.imshow(img, interpolation='none', cmap=pl.gray())
+    pl.axis('off')
 
 class LdaDataGenerator(object):
     '''
@@ -72,8 +76,10 @@ def main(n_doc=100):
         if itr != 0 and (itr % 10 != 0) and itr != lda.n_itr - 1: return
         phi_KxV = lda.get_word_topic_distribution()
         gs = gridspec.GridSpec(1,2)
-        visualize_squared_shape_word_dist(datagen.phi_KxV, gs[0])
-        visualize_squared_shape_word_dist(phi_KxV, gs[1])
+        pl.subplot(gs[0]) ; pl.title('True')
+        visualize_squared_shape_word_dist(datagen.phi_KxV)
+        pl.subplot(gs[1]) ; pl.title('Inferred at %d'%itr)
+        visualize_squared_shape_word_dist(phi_KxV)
         pl.draw()
         pl.show()
 
